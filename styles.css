@@ -30,9 +30,16 @@
 }
 
 .priority-matrix-view .pmx-lists {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  display: flex !important;
+  flex-direction: row;
+  align-items: stretch;
   gap: 8px;
+  width: 100%;
+}
+
+.priority-matrix-view .pmx-lists .pmx-list-wrapper {
+  flex: 1 1 0;
+  min-width: 0;
 }
 
 .priority-matrix-view .pmx-col-header,
