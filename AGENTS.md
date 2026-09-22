@@ -8,7 +8,7 @@
 
 ## Environment & tooling
 
-- Node.js: use current LTS (Node 18+ recommended).
+- Node.js: use current LTS (Node 24+ recommended).
 - **Package manager: npm** (required for this sample - `package.json` defines npm scripts and dependencies).
 - **Bundler: esbuild** (required for this sample - `esbuild.config.mjs` and build scripts depend on it). Alternative bundlers like Rollup or webpack are acceptable for other projects if they bundle all external dependencies into `main.js`.
 - Types: `obsidian` type definitions.
@@ -32,6 +32,19 @@ npm run dev
 ```bash
 npm run build
 ```
+
+### Container build
+
+When Windows Group Policy blocks the native esbuild executable, use Podman:
+
+```powershell
+podman machine start
+$workspace = (Get-Location).Path
+podman build --file Containerfile.build --tag eisenhower-matrix-builder:local .
+podman run --rm --volume "${workspace}:/workspace" --mount "type=bind,source=$env:USERPROFILE\zscaler-ca-bundle.pem,destination=/run/certs/corporate-ca.pem,readonly" --env NPM_CONFIG_CAFILE=/run/certs/corporate-ca.pem --env NPM_CONFIG_STRICT_SSL=true --workdir /workspace eisenhower-matrix-builder:local sh -lc 'npm ci --no-audit --no-fund && npm run build'
+```
+
+The commands use Node 22 inside a Linux container, mount the workspace, and write `main.js` back to the workspace. The Zscaler CA bundle is mounted read-only.
 
 ## Linting
 

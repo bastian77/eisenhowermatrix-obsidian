@@ -1,12 +1,3 @@
-/*
-
-This CSS file will be included with your plugin, and
-available in the app when your plugin is enabled.
-
-If your plugin does not need CSS, delete this file.
-
-*/
-/* Priority Matrix basic visuals - all scoped to avoid conflicts */
 .priority-matrix-view .priority-matrix-container {
   display: flex;
   flex-direction: column;
@@ -15,463 +6,186 @@ If your plugin does not need CSS, delete this file.
 
 .priority-matrix-view .priority-matrix-toolbar {
   display: flex;
-  align-items: center;
   justify-content: space-between;
   gap: 8px;
 }
 
-.priority-matrix-view .priority-matrix-title {
+.priority-matrix-view .priority-matrix-title,
+.priority-matrix-view .pmx-col-header,
+.priority-matrix-view .pmx-col-subheader,
+.priority-matrix-view .pmx-cell-title {
   font-weight: 600;
 }
 
 .priority-matrix-view .priority-matrix-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr; /* matrix columns */
-  grid-auto-rows: auto; /* banks and rows stack */
+  grid-template-columns: 140px minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-rows: auto minmax(180px, 1fr) minmax(180px, 1fr);
+  height: clamp(460px, 68vh, 760px);
   gap: 8px;
 }
 
-.priority-matrix-view .pmx-col-header {
-  font-weight: 600;
+.priority-matrix-view .pmx-list-wrapper {
+  grid-column: 1 / span 3;
+}
+
+.priority-matrix-view .pmx-lists {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 8px;
+}
+
+.priority-matrix-view .pmx-col-header,
+.priority-matrix-view .pmx-col-subheader,
+.priority-matrix-view .pmx-cell-title {
   padding: 6px 8px;
-}
-
-.priority-matrix-view .pmx-col-header button {
-  margin-left: 8px;
-}
-
-.priority-matrix-view .pmx-collapse-btn {
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  padding: 4px;
-  color: var(--text-muted);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 20px;
-  min-height: 20px;
-  border-radius: 3px;
-  transition: background-color 0.15s ease, color 0.15s ease;
-}
-
-.priority-matrix-view .pmx-collapse-btn:hover {
-  background: var(--background-modifier-hover);
-  color: var(--text-normal);
-}
-
-.priority-matrix-view .pmx-collapse-btn svg {
-  display: block;
 }
 
 .priority-matrix-view .pmx-matrix-header {
   display: grid;
   grid-template-columns: 1fr 1fr;
+  grid-column: 2 / span 2;
   gap: 8px;
-  grid-column: 1 / span 2;
-}
-
-.priority-matrix-view .pmx-col-subheader {
-  font-weight: 600;
-  padding: 6px 8px;
   text-align: center;
 }
 
-.priority-matrix-view .pmx-bank-wrapper {
-  grid-column: 1 / span 2; /* full width */
-  /* Allow touch events for drop zones */
-  touch-action: manipulation;
-}
-
-.priority-matrix-view .pmx-bank {
-  border: 1px solid var(--background-modifier-border);
-  border-radius: var(--input-radius);
-  padding: 0;
-  min-height: 120px;
-  background-color: var(--background-secondary);
+.priority-matrix-view .pmx-row-label {
   display: flex;
-  flex-direction: column;
-  overflow: hidden;
+  align-items: center;
+  min-width: 0;
 }
 
-/* Highlight drop target when dragging external notes into TODO bank */
-.priority-matrix-view .pmx-bank.pmx-todo.pmx-drop-target {
-  border-color: var(--interactive-accent);
-  box-shadow: 0 0 0 1px var(--interactive-accent), 0 0 8px rgba(0, 0, 0, 0.2);
-  background-color: color-mix(in srgb, var(--background-secondary) 80%, var(--interactive-accent) 20%);
-  transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
-}
-
-.priority-matrix-view .pmx-collapsed {
-  display: none;
-}
-
-/* Settings Modal Styles */
-.priority-matrix-settings-modal {
-  min-width: 500px;
-  max-width: 700px;
-}
-
-.priority-matrix-settings-modal .modal-content {
-  padding: 20px;
-}
-
-.priority-matrix-settings-modal h3 {
-  margin-top: 0;
-  margin-bottom: 10px;
-}
-
-.priority-matrix-settings-modal h4 {
-  margin-top: 20px;
-  margin-bottom: 10px;
-  font-size: 1.1em;
-  border-bottom: 1px solid var(--background-modifier-border);
-  padding-bottom: 5px;
-}
-
-.priority-matrix-settings-modal .priority-matrix-settings-description {
-  color: var(--text-muted);
-  font-size: 0.9em;
-  margin-bottom: 20px;
-}
-
-.priority-matrix-settings-modal .setting-item {
-  border-top: 1px solid var(--background-modifier-border);
-  padding: 12px 0;
-}
-
-.priority-matrix-settings-modal .setting-item:first-of-type {
-  border-top: none;
-}
-
-.priority-matrix-settings-modal .setting-item-name {
-  font-weight: 500;
-  margin-bottom: 4px;
-}
-
-.priority-matrix-settings-modal .setting-item-description {
-  color: var(--text-muted);
-  font-size: 0.9em;
-  margin-bottom: 8px;
-}
-
-.priority-matrix-settings-modal input[type="text"],
-.priority-matrix-settings-modal input[type="number"],
-.priority-matrix-settings-modal textarea {
-  width: 100%;
-  max-width: 400px;
-}
-
-.priority-matrix-settings-modal input.error {
-  border-color: var(--text-error);
-}
-
-.priority-matrix-settings-modal textarea {
-  resize: vertical;
-  min-height: 80px;
-  font-family: var(--font-monospace);
-  font-size: 0.9em;
-}
-
-.priority-matrix-settings-modal textarea.priority-matrix-path-input {
-  font-size: 0.65em;
-  overflow-x: auto;
-  overflow-y: auto;
-  white-space: pre;
-  word-wrap: normal;
-  min-height: 80px;
-  max-height: 80px;
-  height: 80px;
-}
-
+.priority-matrix-view .pmx-list-panel,
 .priority-matrix-view .pmx-cell {
-  border: 1px solid var(--background-modifier-border);
-  border-radius: var(--input-radius);
-  padding: 0;
+  min-height: 0;
   min-height: 120px;
-  background-color: var(--background-secondary);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  /* Allow touch events for drop zones */
-  touch-action: manipulation;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-s);
+  background: var(--background-secondary);
+}
+
+.priority-matrix-view .pmx-list-panel {
+  max-height: 360px;
+  overflow-y: auto;
 }
 
 .priority-matrix-view .pmx-cell-title {
-  font-weight: 600;
-  padding: 6px 8px;
-  margin: 0;
   border-bottom: 1px solid var(--background-modifier-border);
-  background-color: var(--background-secondary);
 }
 
-.priority-matrix-view .pmx-cell-items-wrapper {
-  margin: 4px;
+.priority-matrix-view .pmx-cell {
   height: 100%;
-  flex: 1;
-  min-height: 0;
 }
 
-.priority-matrix-view .pmx-menu-btn {
-  width: 28px;
-  text-align: center;
+.priority-matrix-view .pmx-cell.pmx-q1 {
+  border-color: var(--color-green);
+  background: color-mix(in srgb, var(--color-green) 16%, var(--background-secondary));
 }
 
-.priority-matrix-view .pmx-add-help {
-  color: var(--text-muted);
-  font-size: 12px;
+.priority-matrix-view .pmx-cell.pmx-q2 {
+  border-color: var(--color-yellow);
+  background: color-mix(in srgb, var(--color-yellow) 16%, var(--background-secondary));
 }
 
-/* Item lists - scoped to priority matrix */
+.priority-matrix-view .pmx-cell.pmx-q3 {
+  border-color: var(--color-cyan);
+  background: color-mix(in srgb, var(--color-cyan) 16%, var(--background-secondary));
+}
+
+.priority-matrix-view .pmx-cell.pmx-q4 {
+  border-color: var(--color-red);
+  background: color-mix(in srgb, var(--color-red) 16%, var(--background-secondary));
+}
+
+.priority-matrix-view .pmx-cell.pmx-q1 .pmx-cell-title {
+  background: color-mix(in srgb, var(--color-green) 24%, transparent);
+}
+
+.priority-matrix-view .pmx-cell.pmx-q2 .pmx-cell-title {
+  background: color-mix(in srgb, var(--color-yellow) 24%, transparent);
+}
+
+.priority-matrix-view .pmx-cell.pmx-q3 .pmx-cell-title {
+  background: color-mix(in srgb, var(--color-cyan) 24%, transparent);
+}
+
+.priority-matrix-view .pmx-cell.pmx-q4 .pmx-cell-title {
+  background: color-mix(in srgb, var(--color-red) 24%, transparent);
+}
+
 .priority-matrix-view .pmx-list {
-  margin: 0;
-  padding: 4px;
-  margin-inline: 4px;
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
   gap: 6px;
-  list-style: none;
+  padding: 8px;
+  overflow-y: auto;
+  min-height: 0;
+  box-sizing: border-box;
 }
 
-.priority-matrix-view .pmx-list > div {
-  margin-block-start: 0;
+.priority-matrix-view .pmx-cell .pmx-list {
+  height: calc(100% - 37px);
 }
 
-/* Item wrapper - allows items to wrap content */
 .priority-matrix-view .pmx-item-wrapper {
-  display: inline-block;
-  width: fit-content;
-  max-width: 100%;
-  margin-inline: 4px;
+  width: 100%;
+  flex: 0 0 auto;
 }
 
-/* Individual item card */
 .priority-matrix-view .pmx-item {
-  font-size: 0.875rem;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 3px;
+  width: 100%;
+  max-width: 100%;
+  min-height: 44px;
+  padding: 6px 8px;
+  box-sizing: border-box;
   border: 1px solid var(--background-modifier-border);
-  border-radius: var(--input-radius);
-  overflow: hidden;
-  transition: 300ms opacity cubic-bezier(0.25, 1, 0.5, 1), border-color 0.15s ease, background-color 0.15s ease;
+  border-radius: var(--radius-s);
+  background: var(--background-primary);
+  color: var(--text-normal);
   cursor: grab;
-  display: inline-block;
-  width: fit-content;
+  text-align: left;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.priority-matrix-view .pmx-item-title {
+  display: block;
+  width: 100%;
+  line-height: 1.35;
+}
+
+.priority-matrix-view .pmx-source-task-content {
+  display: flex;
+  flex: 1 1 auto;
   min-width: 0;
-  /* Enable touch dragging - allow pan-y for vertical scrolling when not dragging */
-  touch-action: manipulation;
-  /* Prevent text selection during drag */
-  user-select: none;
-  -webkit-user-select: none;
+  flex-direction: column;
+  gap: 3px;
 }
 
 .priority-matrix-view .pmx-item:hover {
   border-color: var(--interactive-accent);
-  background-color: var(--background-modifier-hover);
-}
-
-.priority-matrix-view .pmx-item:active,
-.priority-matrix-view .pmx-item.dragging {
-  cursor: grabbing;
-  opacity: 0.7;
-  /* Prevent all touch actions when dragging */
-  touch-action: none;
-  /* Prevent text selection during drag */
-  user-select: none;
-  -webkit-user-select: none;
-}
-
-/* Item content wrapper */
-.priority-matrix-view .pmx-item-content-wrapper {
-  background: var(--background-primary);
-}
-
-/* Item title wrapper */
-.priority-matrix-view .pmx-item-title-wrapper {
-  background: var(--background-primary);
-  display: flex;
-  padding-block: 4px;
-  padding-inline: 8px;
-  align-items: center;
-  gap: 8px;
-  white-space: nowrap;
-  position: relative;
-}
-
-/* Drag handle grip icon */
-.priority-matrix-view .pmx-item-title-wrapper::before {
-  content: '⋮⋮';
-  font-size: 11px;
-  line-height: 1;
-  color: var(--text-muted);
-  opacity: 0.6;
-  letter-spacing: -2px;
-  display: inline-block;
-  flex-shrink: 0;
-  transform: rotate(90deg);
-  transition: opacity 0.2s ease, color 0.2s ease;
-  margin-right: 4px;
-  font-weight: bold;
-  vertical-align: middle;
-}
-
-.priority-matrix-view .pmx-item:hover .pmx-item-title-wrapper::before {
-  opacity: 1;
-  color: var(--interactive-accent);
-}
-
-/* Item title */
-.priority-matrix-view .pmx-item-title {
-  line-height: var(--line-height-tight);
-  margin-block-start: 1px;
-  flex: 0 1 auto;
-  white-space: nowrap;
-}
-
-/* Item title as link (when fileAccessor exists - it's an anchor tag) */
-.priority-matrix-view .pmx-item-title[href] {
-  color: var(--link-color, var(--link-color-external, var(--interactive-accent)));
-  text-decoration: none;
-  cursor: pointer;
-  /* Prevent iOS context menu on long press for easier dragging */
-  -webkit-touch-callout: none;
-  /* Prevent dragging the link itself as a URL */
-  -webkit-user-drag: none;
-  user-select: none;
-  -webkit-user-select: none;
-}
-
-.priority-matrix-view .pmx-item-title[href]:hover {
-  color: var(--link-color-hover, var(--link-color-external-hover, var(--interactive-accent)));
-  text-decoration: underline;
-}
-
-/* Item title as plain text (when no fileAccessor - it's a div, not an anchor) */
-.priority-matrix-view .pmx-item-title:not([href]) {
-  color: var(--text-normal);
-  cursor: default;
-}
-
-/* Item menu button */
-.priority-matrix-view .pmx-item-menu-btn {
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  padding: 4px;
-  color: var(--text-muted);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 20px;
-  min-height: 20px;
-  border-radius: 3px;
-  transition: background-color 0.15s ease, color 0.15s ease;
-  flex-shrink: 0;
-  opacity: 0;
-}
-
-.priority-matrix-view .pmx-item:hover .pmx-item-menu-btn {
-  opacity: 1;
-}
-
-.priority-matrix-view .pmx-item-menu-btn:hover {
   background: var(--background-modifier-hover);
-  color: var(--text-normal);
 }
 
-.priority-matrix-view .pmx-item-menu-btn svg {
+.priority-matrix-view .pmx-source-task-meta {
   display: block;
-  width: 16px;
-  height: 16px;
+  width: 100%;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  line-height: 1.25;
+  white-space: normal;
 }
 
-/* Drop indicators for reordering */
-.priority-matrix-view .pmx-item-wrapper.pmx-drop-before {
-  position: relative;
+.priority-matrix-view .pmx-task-checkbox {
+  position: static !important;
+  flex: 0 0 18px;
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  margin-top: 1px;
+  appearance: auto;
 }
-
-/* Drop indicator line above item */
-.priority-matrix-view .pmx-item-wrapper.pmx-drop-before::before {
-  content: '';
-  position: absolute;
-  top: -4px;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background: var(--interactive-accent);
-  border-radius: 2px;
-  box-shadow: 0 0 6px var(--interactive-accent);
-  z-index: 10;
-  opacity: 0.8;
-  pointer-events: none;
-}
-
-.priority-matrix-view .pmx-item-wrapper.pmx-drop-after {
-  position: relative;
-}
-
-/* Drop indicator line below item */
-.priority-matrix-view .pmx-item-wrapper.pmx-drop-after::after {
-  content: '';
-  position: absolute;
-  bottom: -4px;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background: var(--interactive-accent);
-  border-radius: 2px;
-  box-shadow: 0 0 6px var(--interactive-accent);
-  z-index: 10;
-  opacity: 0.8;
-  pointer-events: none;
-}
-
-/* Visual shift for items that will move when item is inserted */
-/* .pmx-shift-right removed */
-
-/* Placeholder showing where item will be dropped */
-.priority-matrix-view .pmx-drop-placeholder {
-  margin: 4px 0;
-  height: 40px;
-  border: 2px dashed var(--interactive-accent);
-  border-radius: var(--input-radius);
-  background: var(--interactive-accent);
-  opacity: 0.3;
-  transition: all 0.2s ease;
-  animation: pulse 1.5s ease-in-out infinite;
-}
-
-/* Shift items to show where dragged item will land */
-/* Shift by approximate item height + gap to show where new item will be inserted */
-/* .pmx-shift-down removed as we now use placeholder element for layout reflow */
-
-/* Drag overlay that follows pointer */
-.pmx-drag-overlay {
-  position: fixed !important;
-  pointer-events: none !important;
-  z-index: 9999 !important;
-  opacity: 0.8;
-  transform-origin: top left;
-}
-
-@keyframes pulse {
-  0%, 100% {
-    opacity: 0.3;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 0.5;
-    transform: scale(1.05);
-  }
-}
-
-/* Allow long lists to scroll if needed */
-.priority-matrix-view .pmx-bank,
-.priority-matrix-view .pmx-cell {
-  overflow: auto;
-}
-
-/* Hide elements when we explicitly mark them from the processor */
-.priority-matrix-view .pmx-hidden {
-  display: none !important;
-}
-
-/* Additional CSS for hiding markdown sections - JS will add classes */

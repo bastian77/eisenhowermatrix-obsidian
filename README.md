@@ -1,20 +1,18 @@
 # Priority Matrix Obsidian Plugin
 
-Create and manage priority matrix notes with auto detection of tasks from your vault.
+Create a source-backed Eisenhower view from tasks in your vault.
 A plugin made for [Obsidian](https://obsidian.md/)
 
 <img src="Images/PriorityMatrix.png" width="600" />
 
 ## Features
 
-- **Matrix View**: Visualize your tasks in a 2x2 priority matrix (Urgent/Important, Urgent/Not Important, Not Urgent/Important, Not Urgent/Not Important)
-- **Automatic TODO Sourcing**: Automatically scans your vault for unchecked Markdown tasks (`- [ ]`) and displays them in the matrix
-- **Drag-Drop Tasks from your obsidian explorer**: If there are tasks outside of your specified folder that you want to explicitly add, you can
-- **Interactive Task Management**: Drag and drop tasks between quadrants to reprioritize, mark tasks as done, and manage your workflow
-- **Custom Matrix Notes**: Create new priority matrix notes with a single command
-- **Auto-Switch View**: Automatically opens files with "priority matrix" in the name in matrix view
-- **Flexible Configuration**: Customize scan paths, TODO tags, and behavior settings
-- **Markdown Integration**: Matrix notes are stored as markdown files, fully compatible with Obsidian's native features
+- **Matrix View**: Visualize tasks in a 2x2 priority matrix based on priority and due date
+- **Individual task scanning**: Scans each Markdown task independently, including multiple tasks in one note
+- **Interactive priority management**: Drag tasks between important and not-important quadrants
+- **Source-backed tasks**: Tasks remain in their original notes; the view does not duplicate task data
+- **Tasks fields**: Uses `[priority:: ...]` and `[due:: YYYY-MM-DD]` fields from the Tasks/Dataview format
+- **Flexible Configuration**: Customize the folder, recursion, and scan limit
 
 ## Installation
 ### From Obsidian Community Plugins
@@ -33,22 +31,18 @@ A plugin made for [Obsidian](https://obsidian.md/)
 
 ## Usage
 
-### Creating a Priority Matrix Note
-1. Right-click on a folder in the file explorer and select **New priority matrix note**
-
-Alternatively, you can:
+### Opening the Eisenhower view
 1. Open the command palette (`Ctrl+P` / `Cmd+P`)
-2. Run **Create priority matrix note**
-3. A new note with the matrix template will be created in the current folder
+2. Run **Open tasks Eisenhower view**
+3. The view scans the configured folder and displays each open task once
 
 ### Working with the Matrix
 
-- **Customise Settings**: Customize the folder to scan, change your tag to scan, add exempted notes
-- **View Tasks**: Unchecked Markdown tasks from your vault automatically appear in the matrix on refresh. Or simply press the refresh icon
+- **Customise Settings**: Customize the folder, recursion, and scan limit
+- **View Tasks**: Open Markdown tasks automatically appear in the matrix on refresh. Each source task is shown individually
 - **Move Tasks**: Drag tasks between quadrants to reprioritize them
-- **Mark as Done**: Move tasks to the Done bank to mark them as complete
 - **Edit Tasks**: Click on tasks to edit them directly in their source files
-- **Switch Views**: Toggle between matrix view and markdown view using the view switcher
+- **Open Source**: Click a task to open its original note
 
 <img src="Images/Md.png" width="600" />
 
@@ -64,21 +58,19 @@ The Eisenhower Matrix organizes tasks into four quadrants:
 ## Configuration
 
 Access plugin settings via **Settings** → **Priority Matrix**.
-Priority Note specific settings is where you can specify individual note settings.
-
-<img src="Images/Settings.png" width="200" />
 
 ### Scan Settings
 
-- **Include folder**: Vault-relative path to scan for `#TODO` notes (default: `/` for entire vault)
+- **Task folder**: Vault-relative path to scan for open tasks (default: `/` for entire vault)
 - **Recursive scan**: Enable to scan subfolders of the include folder
-- **Task detection**: Any unchecked Markdown task (`- [ ]`, `* [ ]`, `+ [ ]`, or numbered equivalents) is detected automatically
+- **Task detection**: Open Markdown tasks using `- [ ]`, `* [ ]`, `+ [ ]`, or numbered equivalents are detected automatically
+- **Important from priority**: Configure the priority threshold that maps tasks to Important; priorities below it map to Not important
+- **Urgent within days**: Configure how many days ahead a due date counts as urgent (default: `7`); overdue tasks are always urgent
 - **Max files to scan**: Limit the number of files to scan (set to `0` for unlimited)
 
 ### Behavior Settings
 
-- **Auto-remove TODO on Done**: Remove the `#TODO` tag when a task is moved to Done (instead of strikethrough)
-- **Strikethrough TODO on Done**: Replace `#TODO` with `~~#TODO~~` when moved to Done (disabled if auto-remove is enabled)
+- **Priority updates**: Dragging a task to an important or not-important quadrant updates its existing `[priority:: ...]` field in the source note
 
 ## Requirements
 
@@ -89,16 +81,14 @@ Priority Note specific settings is where you can specify individual note setting
 
 ### Tasks Not Appearing
 
-- Ensure your tasks use an unchecked Markdown checkbox such as `- [ ] Task name`
-- Check that the **Include folder** setting includes the path where your TODO notes are located
-- Verify that **Recursive scan** is enabled if your TODOs are in subfolders
+- Ensure your tasks use an open Markdown checkbox such as `- [ ] Task name`
+- Check that the **Task folder** setting includes the note containing the task
+- Verify that **Recursive scan** is enabled for tasks in subfolders
 - Check the **Max files to scan** setting isn't limiting the scan
-- Make sure property [do-not-delete:priority-matrix-plugin] has not been removed
 
-### Matrix View Not Opening
+### Tasks view not opening
 
-- Files with "priority matrix" in the name will automatically open in matrix view
-- Ensure the file contains a priority matrix code block or frontmatter
+- Open the command palette and run **Open tasks Eisenhower view**
 
 ### Plugin Not Loading
 
