@@ -1,6 +1,7 @@
 import { App, MarkdownView, Menu, Notice, Plugin, PluginSettingTab, Setting, TAbstractFile, TFile, TFolder, WorkspaceLeaf, EventRef } from 'obsidian';
 import { PriorityMatrixView, VIEW_TYPE_PRIORITY_MATRIX } from './src/views/PriorityMatrixView';
 import { createLogger } from './src/utils/logger';
+import { hasOpenTask } from './src/utils/taskDetection';
 
 interface PriorityMatrixPluginSettings {
     includePath: string; // vault-relative folder path
@@ -391,10 +392,7 @@ export default class PriorityMatrixPlugin extends Plugin {
     private async scanForTodoFiles(includeFolderOverride?: TFolder): Promise<string[]> {
         const includeRoot = includeFolderOverride ?? this.resolveIncludeRoot();
         const results: string[] = [];
-        const visited: TFile[] = [];
         const max = this.settings.maxFiles === 0 ? Number.MAX_SAFE_INTEGER : this.settings.maxFiles;
-        const todoTag = this.settings.todoTag;
-        const tagRegex = new RegExp(`#${escapeRegExp(todoTag)}(?![A-Za-z0-9-])`, 'i');
 
         const walk = async (folder: TFolder) => {
             for (const child of folder.children) {
@@ -405,9 +403,8 @@ export default class PriorityMatrixPlugin extends Plugin {
                     }
                 } else if (child instanceof TFile) {
                     if (child.extension.toLowerCase() !== 'md') continue;
-                    visited.push(child);
                     const content = await this.app.vault.read(child);
-                    if (tagRegex.test(content)) {
+                    if (hasOpenTask(content)) {
                         results.push(child.path);
                     }
                 }
@@ -513,7 +510,7 @@ class PriorityMatrixSettingTab extends PluginSettingTab {
 
         new Setting(containerEl)
             .setName('Todo tag')
-            .setDesc('Tag to match (without #), case insensitive')
+            .setDesc('Optional legacy tag used when removing a linked task from the matrix')
             .addText(text => text
                 .setPlaceholder('TODO')
                 .setValue(this.plugin.settings.todoTag)
@@ -540,7 +537,7 @@ class PriorityMatrixSettingTab extends PluginSettingTab {
 
         new Setting(containerEl)
             .setName('Automatically remove todo on done')
-            .setDesc('Remove the todo tag instead of using strikethrough when moved to done')
+            .setDesc('Remove the configured legacy tag instead of using strikethrough when moved to done')
             .addToggle(toggle => toggle
                 .setValue(this.plugin.settings.autoRemoveTodoOnDone)
                 .onChange(async (value) => {
@@ -552,7 +549,7 @@ class PriorityMatrixSettingTab extends PluginSettingTab {
 
         new Setting(containerEl)
             .setName('Use strikethrough for todo on done')
-            .setDesc('Replace #todo with ~~#todo~~ when moved to done')
+            .setDesc('Replace the configured legacy tag with strikethrough when moved to done')
             .addToggle(toggle => toggle
                 .setDisabled(this.plugin.settings.autoRemoveTodoOnDone)
                 .setValue(this.plugin.settings.enableStrikethroughOnDone)

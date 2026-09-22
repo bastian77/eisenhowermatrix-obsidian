@@ -8,7 +8,7 @@ A plugin made for [Obsidian](https://obsidian.md/)
 ## Features
 
 - **Matrix View**: Visualize your tasks in a 2x2 priority matrix (Urgent/Important, Urgent/Not Important, Not Urgent/Important, Not Urgent/Not Important)
-- **Automatic TODO Sourcing**: Automatically scans your vault for tasks tagged with `#TODO` and displays them in the matrix, or you can add your own tag to scan
+- **Automatic TODO Sourcing**: Automatically scans your vault for unchecked Markdown tasks (`- [ ]`) and displays them in the matrix
 - **Drag-Drop Tasks from your obsidian explorer**: If there are tasks outside of your specified folder that you want to explicitly add, you can
 - **Interactive Task Management**: Drag and drop tasks between quadrants to reprioritize, mark tasks as done, and manage your workflow
 - **Custom Matrix Notes**: Create new priority matrix notes with a single command
@@ -44,7 +44,7 @@ Alternatively, you can:
 ### Working with the Matrix
 
 - **Customise Settings**: Customize the folder to scan, change your tag to scan, add exempted notes
-- **View Tasks**: Tasks from your vault tagged with `#TODO` will automatically appear in the matrix on refresh. Or simply press the refresh icon
+- **View Tasks**: Unchecked Markdown tasks from your vault automatically appear in the matrix on refresh. Or simply press the refresh icon
 - **Move Tasks**: Drag tasks between quadrants to reprioritize them
 - **Mark as Done**: Move tasks to the Done bank to mark them as complete
 - **Edit Tasks**: Click on tasks to edit them directly in their source files
@@ -72,7 +72,7 @@ Priority Note specific settings is where you can specify individual note setting
 
 - **Include folder**: Vault-relative path to scan for `#TODO` notes (default: `/` for entire vault)
 - **Recursive scan**: Enable to scan subfolders of the include folder
-- **TODO tag**: Tag to match (without `#`), case-insensitive (default: `TODO`)
+- **Task detection**: Any unchecked Markdown task (`- [ ]`, `* [ ]`, `+ [ ]`, or numbered equivalents) is detected automatically
 - **Max files to scan**: Limit the number of files to scan (set to `0` for unlimited)
 
 ### Behavior Settings
@@ -89,7 +89,7 @@ Priority Note specific settings is where you can specify individual note setting
 
 ### Tasks Not Appearing
 
-- Ensure your tasks are tagged with `#TODO` (or the tag you configured in settings)
+- Ensure your tasks use an unchecked Markdown checkbox such as `- [ ] Task name`
 - Check that the **Include folder** setting includes the path where your TODO notes are located
 - Verify that **Recursive scan** is enabled if your TODOs are in subfolders
 - Check the **Max files to scan** setting isn't limiting the scan

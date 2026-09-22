@@ -7,6 +7,7 @@ import { Matrix as MatrixComponent } from '../components/Matrix';
 import { SettingsModal } from '../settings/SettingsModal';
 import PriorityMatrixPlugin from '../../main';
 import { createLogger } from '../utils/logger';
+import { hasOpenTask } from '../utils/taskDetection';
 
 export const VIEW_TYPE_PRIORITY_MATRIX = 'priority-matrix-view';
 
@@ -338,8 +339,7 @@ export class PriorityMatrixView extends TextFileView {
             : (matrixFolder ? matrixFolder.path : '/');
         log.log('PriorityMatrixView - resolved includePath:', includePath);
         const recursive = settings.recursive !== false;
-        const todoTag = settings.todoTag || 'TODO';
-        const maxFiles = settings.maxFiles || 99999;
+        const maxFiles = settings.maxFiles === 0 ? Number.MAX_SAFE_INTEGER : (settings.maxFiles ?? 99999);
 
         // Resolve include root folder
         // If includePath is explicitly '/', use vault root
@@ -356,7 +356,6 @@ export class PriorityMatrixView extends TextFileView {
 
         // Scan for TODO files
         const results: string[] = [];
-        const tagRegex = new RegExp(`#${escapeRegExp(todoTag)}(?![A-Za-z0-9-])`, 'i');
 
         const walk = async (folder: TFolder) => {
             for (const child of folder.children) {
@@ -367,8 +366,9 @@ export class PriorityMatrixView extends TextFileView {
                     }
                 } else if (child instanceof TFile) {
                     if (child.extension.toLowerCase() !== 'md') continue;
+                    if (child.path === this.file.path) continue;
                     const content = await this.app.vault.read(child);
-                    if (tagRegex.test(content)) {
+                    if (hasOpenTask(content)) {
                         results.push(child.path);
                     }
                 }
