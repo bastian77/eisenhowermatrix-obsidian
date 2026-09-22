@@ -66,6 +66,7 @@ Access plugin settings via **Settings** → **Priority Matrix**.
 - **Task detection**: Open Markdown tasks using `- [ ]`, `* [ ]`, `+ [ ]`, or numbered equivalents are detected automatically
 - **Important from priority**: Configure the priority threshold that maps tasks to Important; priorities below it map to Not important
 - **Urgent within days**: Configure how many days ahead a due date counts as urgent (default: `7`); overdue tasks are always urgent
+- **Due date format**: Configure the format used for `[due:: ...]` fields independently from Dataview
 - **Max files to scan**: Limit the number of files to scan (set to `0` for unlimited)
 
 ### Behavior Settings

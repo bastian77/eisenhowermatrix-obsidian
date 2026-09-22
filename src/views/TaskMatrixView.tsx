@@ -57,7 +57,8 @@ export class TaskMatrixView extends ItemView {
             new Set(),
             this.plugin.settings.maxFiles,
             this.plugin.settings.importantFrom,
-            this.plugin.settings.urgentWithinDays
+            this.plugin.settings.urgentWithinDays,
+            this.plugin.settings.dateFormat
         );
         this.renderView();
     }
@@ -65,6 +66,6 @@ export class TaskMatrixView extends ItemView {
     private renderView(): void {
         this.contentEl.empty();
         const container = this.contentEl.createDiv({ cls: 'priority-matrix-view' });
-        render(<TaskMatrix tasks={this.tasks} app={this.app} onChanged={() => { void this.refreshTasks(); }} />, container);
+        render(<TaskMatrix tasks={this.tasks} app={this.app} dateFormat={this.plugin.settings.dateFormat} onChanged={() => { void this.refreshTasks(); }} />, container);
     }
 }

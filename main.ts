@@ -1,6 +1,6 @@
 import { Plugin, PluginSettingTab, Setting, WorkspaceLeaf } from 'obsidian';
 import { TaskMatrixView, VIEW_TYPE_TASK_MATRIX } from './src/views/TaskMatrixView';
-import type { TaskPriority } from './src/tasks/TaskProvider';
+import type { TaskDateFormat, TaskPriority } from './src/tasks/TaskProvider';
 
 export interface PriorityMatrixSettings {
     includePath: string;
@@ -8,6 +8,7 @@ export interface PriorityMatrixSettings {
     maxFiles: number;
     importantFrom: Exclude<TaskPriority, null>;
     urgentWithinDays: number;
+    dateFormat: TaskDateFormat;
 }
 
 export const DEFAULT_SETTINGS: PriorityMatrixSettings = {
@@ -16,6 +17,7 @@ export const DEFAULT_SETTINGS: PriorityMatrixSettings = {
     maxFiles: 0,
     importantFrom: 'medium',
     urgentWithinDays: 7,
+    dateFormat: 'yyyy-MM-dd',
 };
 
 export default class PriorityMatrixPlugin extends Plugin {
@@ -29,6 +31,9 @@ export default class PriorityMatrixPlugin extends Plugin {
         }
         if (!Number.isInteger(this.settings.urgentWithinDays) || this.settings.urgentWithinDays < 0) {
             this.settings.urgentWithinDays = DEFAULT_SETTINGS.urgentWithinDays;
+        }
+        if (!['yyyy-MM-dd', 'dd.MM.yyyy', 'dd/MM/yyyy', 'dd-MM-yyyy'].includes(this.settings.dateFormat)) {
+            this.settings.dateFormat = DEFAULT_SETTINGS.dateFormat;
         }
 
         this.registerView(
@@ -131,6 +136,22 @@ class PriorityMatrixSettingTab extends PluginSettingTab {
                 .onChange(async value => {
                     const parsed = Number(value);
                     this.plugin.settings.urgentWithinDays = Number.isInteger(parsed) && parsed >= 0 ? parsed : 7;
+                    await this.plugin.saveSettings();
+                }));
+
+        new Setting(containerEl)
+            .setName('Due date format')
+            .setDesc('Format used when reading due fields such as [due:: 2026-09-25]')
+            .addDropdown(dropdown => dropdown
+                .addOptions({
+                    'yyyy-MM-dd': 'YYYY-MM-DD',
+                    'dd.MM.yyyy': 'DD.MM.YYYY',
+                    'dd/MM/yyyy': 'DD/MM/YYYY',
+                    'dd-MM-yyyy': 'DD-MM-YYYY',
+                })
+                .setValue(this.plugin.settings.dateFormat)
+                .onChange(async value => {
+                    this.plugin.settings.dateFormat = value as TaskDateFormat;
                     await this.plugin.saveSettings();
                 }));
     }

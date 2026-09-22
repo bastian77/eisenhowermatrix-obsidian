@@ -1,5 +1,6 @@
 import { App, TFile, TFolder } from 'obsidian';
 export type TaskPriority = 'highest' | 'high' | 'medium' | 'low' | 'lowest' | null;
+export type TaskDateFormat = 'yyyy-MM-dd' | 'dd.MM.yyyy' | 'dd/MM/yyyy' | 'dd-MM-yyyy';
 
 export type TaskSection = 'todo' | 'q1' | 'q2' | 'q3' | 'q4' | 'done';
 
@@ -16,8 +17,8 @@ export interface SourceTask {
 }
 
 const taskPattern = /^(\s*)([-*+]|\d+[.)])\s+\[([ xX])\]\s+(.*)$/;
-const priorityPattern = /\[priority::\s*(highest|high|medium|low|lowest)\s*\]/i;
-const duePattern = /\[due::\s*(\d{4}-\d{2}-\d{2})\s*\]/i;
+const priorityPattern = /\[priority:{1,2}\s*(highest|high|medium|low|lowest)\s*\]/i;
+const duePattern = /\[due:{1,2}\s*([^\]]+?)\s*\]/i;
 const priorityRank: Record<Exclude<TaskPriority, null>, number> = {
     highest: 5,
     high: 4,
@@ -33,7 +34,8 @@ export async function scanSourceTasks(
     excludedPaths: Set<string> = new Set(),
     maxFiles = 0,
     importantFrom: Exclude<TaskPriority, null> = 'medium',
-    urgentWithinDays = 7
+    urgentWithinDays = 7,
+    dateFormat: TaskDateFormat = 'yyyy-MM-dd'
 ): Promise<SourceTask[]> {
     const tasks: SourceTask[] = [];
     let scannedFiles = 0;
@@ -59,7 +61,7 @@ export async function scanSourceTasks(
                 const text = cleanTaskText(rawText);
                 const checked = match[3].toLowerCase() === 'x';
                 const priority = readPriority(rawText);
-                const due = readDueDate(rawText);
+                const due = readDueDate(rawText, dateFormat);
                 tasks.push({
                     id: `${child.path}:${lineIndex}`,
                     path: child.path,
@@ -90,7 +92,7 @@ export async function updateTaskPriority(app: App, task: SourceTask, priority: T
     }
 
     const withoutPriority = lines[task.line]
-        .replace(/\s*\[priority::\s*(?:highest|high|medium|low|lowest)\s*\]/i, '')
+        .replace(/\s*\[priority:{1,2}\s*(?:highest|high|medium|low|lowest)\s*\]/i, '')
         .replace(/\s+$/, '');
     lines[task.line] = priority ? `${withoutPriority} [priority:: ${priority}]` : withoutPriority;
     await app.vault.modify(file, lines.join('\n'));
@@ -117,17 +119,45 @@ export function readPriority(text: string): TaskPriority {
 
 function cleanTaskText(text: string): string {
     return text
-        .replace(/\s*\[(?:priority|due)::\s*[^\]]+\]/gi, '')
+        .replace(/\s*\[(?:priority|due):{1,2}\s*[^\]]+\]/gi, '')
         .replace(/\s+/g, ' ')
         .trim();
 }
 
-export function readDueDate(text: string): Date | null {
+export function readDueDate(text: string, dateFormat: TaskDateFormat = 'yyyy-MM-dd'): Date | null {
     const value = text.match(duePattern)?.[1];
     if (!value) return null;
 
-    const date = new Date(`${value}T00:00:00`);
-    return Number.isNaN(date.getTime()) ? null : date;
+    const normalized = value.trim();
+    let year: number;
+    let month: number;
+    let day: number;
+
+    const patterns: Record<TaskDateFormat, RegExp> = {
+        'yyyy-MM-dd': /^(\d{4})-(\d{2})-(\d{2})(?:$|T|\s)/,
+        'dd.MM.yyyy': /^(\d{2})\.(\d{2})\.(\d{4})$/,
+        'dd/MM/yyyy': /^(\d{2})\/(\d{2})\/(\d{4})$/,
+        'dd-MM-yyyy': /^(\d{2})-(\d{2})-(\d{4})$/,
+    };
+    const match = normalized.match(patterns[dateFormat]);
+
+    if (!match) return null;
+    if (dateFormat === 'yyyy-MM-dd') {
+        year = Number(match[1]);
+        month = Number(match[2]);
+        day = Number(match[3]);
+    } else {
+        day = Number(match[1]);
+        month = Number(match[2]);
+        year = Number(match[3]);
+    }
+
+    const date = new Date(year, month - 1, day);
+    if (date.getFullYear() !== year || date.getMonth() !== month - 1 || date.getDate() !== day) {
+        return null;
+    }
+
+    return date;
 }
 
 export function classifyTask(
