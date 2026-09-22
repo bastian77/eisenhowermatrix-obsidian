@@ -1,5 +1,5 @@
 import { h } from 'preact';
-import { App, Notice } from 'obsidian';
+import { App, Modal, Notice, Setting } from 'obsidian';
 import { completeTask, SourceTask, TaskDateFormat, TaskSection, updateTaskPriority } from '../tasks/TaskProvider';
 
 interface TaskMatrixProps {
@@ -26,7 +26,13 @@ export function TaskMatrix({ tasks, app, dateFormat, onChanged }: TaskMatrixProp
         if (section === 'todo') return;
         const priority = section === 'q1' || section === 'q2' ? 'high' : 'low';
         try {
-            await updateTaskPriority(app, task, priority);
+            let dueDate: string | undefined;
+            if ((section === 'q1' || section === 'q2') && !task.due) {
+                const selectedDueDate = await requestDueDate(app);
+                if (!selectedDueDate) return;
+                dueDate = selectedDueDate;
+            }
+            await updateTaskPriority(app, task, priority, dueDate, dateFormat);
             onChanged();
         } catch (error) {
             new Notice(error instanceof Error ? error.message : String(error));
@@ -82,6 +88,55 @@ export function TaskMatrix({ tasks, app, dateFormat, onChanged }: TaskMatrixProp
     );
 }
 
+function requestDueDate(app: App): Promise<string | null> {
+    return new Promise(resolve => {
+        const modal = new DueDateModal(app, resolve);
+        modal.open();
+    });
+}
+
+class DueDateModal extends Modal {
+    private resolved = false;
+    private value = '';
+
+    constructor(app: App, private readonly resolveValue: (value: string | null) => void) {
+        super(app);
+        this.setTitle('Due date required');
+    }
+
+    onOpen(): void {
+        new Setting(this.contentEl)
+            .setName('Due date')
+            .setDesc('A due date is required for Do Now and Plan tasks.')
+            .addText(text => {
+                text.inputEl.type = 'date';
+                text.onChange(value => {
+                    this.value = value;
+                });
+            });
+
+        new Setting(this.contentEl)
+            .addButton(button => button
+                .setButtonText('Apply')
+                .setCta()
+                .onClick(() => this.finish(this.value || null)))
+            .addButton(button => button
+                .setButtonText('Cancel')
+                .onClick(() => this.finish(null)));
+    }
+
+    onClose(): void {
+        this.finish(null);
+    }
+
+    private finish(value: string | null): void {
+        if (this.resolved) return;
+        this.resolved = true;
+        this.resolveValue(value);
+        this.close();
+    }
+}
+
 function TaskSectionCell({ section, tasks, onOpen, onComplete, dateFormat, onDrop }: { section: { id: TaskSection; title: string }; tasks: SourceTask[]; onOpen: (task: SourceTask) => void; onComplete: (task: SourceTask) => void; dateFormat: TaskDateFormat; onDrop: (taskId: string, section: TaskSection) => void }) {
     const handleDrop = (event: DragEvent) => {
         event.preventDefault();
@@ -116,8 +171,8 @@ function TaskList({ tasks, onOpen, onComplete, dateFormat }: { tasks: SourceTask
 }
 
 function formatDate(date: Date, format: TaskDateFormat): string {
-    const day = String(date.getDate()).padStart(2, '0');
-    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).replace(/^\d$/, '0$&');
+    const month = String(date.getMonth() + 1).replace(/^\d$/, '0$&');
     const year = date.getFullYear();
     if (format === 'yyyy-MM-dd') return `${year}-${month}-${day}`;
     if (format === 'dd/MM/yyyy') return `${day}/${month}/${year}`;

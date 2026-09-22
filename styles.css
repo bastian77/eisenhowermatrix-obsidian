@@ -60,6 +60,14 @@
   display: flex;
   align-items: center;
   min-width: 0;
+  justify-content: center;
+}
+
+.priority-matrix-view .pmx-row-label .pmx-col-subheader {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  white-space: nowrap;
+  text-align: center;
 }
 
 .priority-matrix-view .pmx-list-panel,
@@ -147,6 +155,9 @@
   width: 100%;
   max-width: 100%;
   min-height: 44px;
+  height: auto !important;
+  max-height: none !important;
+  min-width: 0;
   padding: 6px 8px;
   box-sizing: border-box;
   border: 1px solid var(--background-modifier-border);
@@ -157,6 +168,7 @@
   text-align: left;
   white-space: normal;
   overflow-wrap: anywhere;
+  overflow: visible;
 }
 
 .priority-matrix-view .pmx-item-title {
@@ -169,6 +181,9 @@
   display: flex;
   flex: 1 1 auto;
   min-width: 0;
+  height: auto;
+  max-height: none;
+  overflow: visible;
   flex-direction: column;
   gap: 3px;
 }
@@ -185,6 +200,44 @@
   font-size: 0.75rem;
   line-height: 1.25;
   white-space: normal;
+}
+
+@media (max-width: 700px) {
+  .priority-matrix-view .priority-matrix-toolbar {
+    flex-wrap: wrap;
+  }
+
+  .priority-matrix-view .priority-matrix-grid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-rows: auto auto minmax(180px, auto) auto minmax(180px, auto);
+    height: auto;
+  }
+
+  .priority-matrix-view .pmx-matrix-header {
+    grid-column: 1 / span 2;
+  }
+
+  .priority-matrix-view .pmx-row-label {
+    grid-column: 1 / span 2;
+    min-height: 30px;
+  }
+
+  .priority-matrix-view .pmx-cell {
+    min-height: 180px;
+    height: 100%;
+  }
+
+  .priority-matrix-view .pmx-cell .pmx-list {
+    height: calc(100% - 37px);
+  }
+
+  .priority-matrix-view .pmx-lists {
+    flex-direction: column;
+  }
+
+  .priority-matrix-view .pmx-lists .pmx-list-wrapper {
+    width: 100%;
+  }
 }
 
 .priority-matrix-view .pmx-task-checkbox {
