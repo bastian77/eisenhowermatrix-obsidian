@@ -1,7 +1,8 @@
 import { ItemView, TFolder, WorkspaceLeaf } from 'obsidian';
 import { render, h } from 'preact';
 import { TaskMatrix } from '../components/TaskMatrix';
-import { scanSourceTasks, SourceTask } from '../tasks/TaskProvider';
+import { scanSourceTasks } from '../tasks';
+import type { SourceTask } from '../tasks/types';
 import PriorityMatrixPlugin from '../../main';
 
 export const VIEW_TYPE_TASK_MATRIX = 'priority-matrix-tasks-view';

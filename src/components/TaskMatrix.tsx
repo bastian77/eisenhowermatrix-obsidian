@@ -1,6 +1,9 @@
 import { h } from 'preact';
-import { App, Modal, Notice, Setting } from 'obsidian';
-import { compareTaskPriorityDescending, completeTask, ImportantThreshold, SourceTask, TaskDateFormat, TaskSection, updateTaskPriority } from '../tasks/TaskProvider';
+import { App, Notice } from 'obsidian';
+import { requestDueDate } from './DueDateModal';
+import { TaskList } from './TaskList';
+import { compareTaskPriorityDescending, completeTask, updateTaskPriority } from '../tasks';
+import type { ImportantThreshold, SourceTask, TaskDateFormat, TaskSection } from '../tasks/types';
 
 interface TaskMatrixProps {
     tasks: SourceTask[];
@@ -105,64 +108,6 @@ export function TaskMatrix({ tasks, app, dateFormat, urgentWithinDays, important
     );
 }
 
-function requestDueDate(app: App, urgentWithinDays: number, mustBeUrgent: boolean): Promise<string | null> {
-    return new Promise(resolve => {
-        const modal = new DueDateModal(app, resolve, urgentWithinDays, mustBeUrgent);
-        modal.open();
-    });
-}
-
-class DueDateModal extends Modal {
-    private resolved = false;
-    private value = '';
-
-    constructor(app: App, private readonly resolveValue: (value: string | null) => void, private readonly urgentWithinDays: number, private readonly mustBeUrgent: boolean) {
-        super(app);
-        this.setTitle('Due date required');
-    }
-
-    onOpen(): void {
-        new Setting(this.contentEl)
-            .setName('Due date')
-            .setDesc(this.mustBeUrgent
-                ? `Choose a due date within the next ${this.urgentWithinDays} days.`
-                : `Choose a due date more than ${this.urgentWithinDays} days away.`)
-            .addText(text => {
-                text.inputEl.type = 'date';
-                const today = new Date();
-                const boundaryDate = new Date(today);
-                boundaryDate.setDate(boundaryDate.getDate() + this.urgentWithinDays);
-                const earliestNotUrgentDate = new Date(boundaryDate);
-                earliestNotUrgentDate.setDate(earliestNotUrgentDate.getDate() + 1);
-                text.inputEl.min = toInputDate(this.mustBeUrgent ? today : earliestNotUrgentDate);
-                if (this.mustBeUrgent) text.inputEl.max = toInputDate(boundaryDate);
-                text.onChange(value => {
-                    this.value = value;
-                });
-            });
-
-        new Setting(this.contentEl)
-            .addButton(button => button
-                .setButtonText('Apply')
-                .setCta()
-                .onClick(() => this.finish(this.value || null)))
-            .addButton(button => button
-                .setButtonText('Cancel')
-                .onClick(() => this.finish(null)));
-    }
-
-    onClose(): void {
-        this.finish(null);
-    }
-
-    private finish(value: string | null): void {
-        if (this.resolved) return;
-        this.resolved = true;
-        this.resolveValue(value);
-        this.close();
-    }
-}
-
 function TaskSectionCell({ section, tasks, onOpen, onComplete, dateFormat, onDrop }: { section: { id: TaskSection; title: string }; tasks: SourceTask[]; onOpen: (task: SourceTask) => void; onComplete: (task: SourceTask) => void; dateFormat: TaskDateFormat; onDrop: (taskId: string, section: TaskSection) => void }) {
     const handleDrop = (event: DragEvent) => {
         event.preventDefault();
@@ -176,38 +121,4 @@ function TaskSectionCell({ section, tasks, onOpen, onComplete, dateFormat, onDro
             <TaskList tasks={tasks} onOpen={onOpen} onComplete={onComplete} dateFormat={dateFormat} />
         </div>
     );
-}
-
-function TaskList({ tasks, onOpen, onComplete, dateFormat }: { tasks: SourceTask[]; onOpen: (task: SourceTask) => void; onComplete?: (task: SourceTask) => void; dateFormat: TaskDateFormat }) {
-    return (
-        <div className="pmx-list">
-            {tasks.map(task => (
-                <div className="pmx-item-wrapper" key={task.id}>
-                    <button className="pmx-item pmx-source-task" draggable onDragStart={(event) => event.dataTransfer?.setData('text/plain', task.id)} onClick={() => onOpen(task)} title={`${task.path}:${task.line + 1}`}>
-                        <input className="pmx-task-checkbox" type="checkbox" checked={task.checked} disabled={task.checked} aria-label="Mark task as complete" onClick={(event) => event.stopPropagation()} onChange={() => { if (onComplete) void onComplete(task); }} />
-                        <span className="pmx-source-task-content">
-                            <span className="pmx-item-title">{task.text}</span>
-                            <span className="pmx-source-task-meta">{task.priority ?? 'no priority'}{task.due ? ` · due ${formatDate(task.due, dateFormat)}` : ''}</span>
-                        </span>
-                    </button>
-                </div>
-            ))}
-        </div>
-    );
-}
-
-function formatDate(date: Date, format: TaskDateFormat): string {
-    const day = String(date.getDate()).replace(/^\d$/, '0$&');
-    const month = String(date.getMonth() + 1).replace(/^\d$/, '0$&');
-    const year = date.getFullYear();
-    if (format === 'yyyy-MM-dd') return `${year}-${month}-${day}`;
-    if (format === 'dd/MM/yyyy') return `${day}/${month}/${year}`;
-    if (format === 'dd-MM-yyyy') return `${day}-${month}-${year}`;
-    return `${day}.${month}.${year}`;
-}
-
-function toInputDate(date: Date): string {
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${date.getFullYear()}-${month}-${day}`;
 }
