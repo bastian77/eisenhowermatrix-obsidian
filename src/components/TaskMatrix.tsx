@@ -40,12 +40,14 @@ export function TaskMatrix({ tasks, app, dateFormat, urgentWithinDays, important
         const importantSection = section === 'q1' || section === 'q2';
         const priority = importantSection ? importantFrom : priorityBelowThreshold[importantFrom];
         try {
-            let dueDate: string | undefined;
+            let dueDate: string | null | undefined;
             const urgentSection = section === 'q1' || section === 'q3';
             const taskIsUrgent = task.section === 'q1' || task.section === 'q3';
             const needsUrgencyChangeDate = urgentSection !== taskIsUrgent;
             const needsPlanDate = section === 'q2' && !task.due;
-            if (needsUrgencyChangeDate || needsPlanDate) {
+            if (section === 'q4' && taskIsUrgent) {
+                dueDate = null;
+            } else if (needsUrgencyChangeDate || needsPlanDate) {
                 const selectedDueDate = await requestDueDate(app, urgentWithinDays, urgentSection);
                 if (!selectedDueDate) return;
                 dueDate = selectedDueDate;
@@ -103,9 +105,9 @@ export function TaskMatrix({ tasks, app, dateFormat, urgentWithinDays, important
     );
 }
 
-function requestDueDate(app: App, urgentWithinDays?: number): Promise<string | null> {
+function requestDueDate(app: App, urgentWithinDays: number, mustBeUrgent: boolean): Promise<string | null> {
     return new Promise(resolve => {
-        const modal = new DueDateModal(app, resolve, urgentWithinDays);
+        const modal = new DueDateModal(app, resolve, urgentWithinDays, mustBeUrgent);
         modal.open();
     });
 }
@@ -114,7 +116,7 @@ class DueDateModal extends Modal {
     private resolved = false;
     private value = '';
 
-    constructor(app: App, private readonly resolveValue: (value: string | null) => void, private readonly urgentWithinDays?: number) {
+    constructor(app: App, private readonly resolveValue: (value: string | null) => void, private readonly urgentWithinDays: number, private readonly mustBeUrgent: boolean) {
         super(app);
         this.setTitle('Due date required');
     }
@@ -122,18 +124,18 @@ class DueDateModal extends Modal {
     onOpen(): void {
         new Setting(this.contentEl)
             .setName('Due date')
-            .setDesc(this.urgentWithinDays === undefined
-                ? 'A due date is required for Do Now and Plan tasks.'
-                : `Choose a due date within the next ${this.urgentWithinDays} days.`)
+            .setDesc(this.mustBeUrgent
+                ? `Choose a due date within the next ${this.urgentWithinDays} days.`
+                : `Choose a due date more than ${this.urgentWithinDays} days away.`)
             .addText(text => {
                 text.inputEl.type = 'date';
-                if (this.urgentWithinDays !== undefined) {
-                    const today = new Date();
-                    const latestDate = new Date(today);
-                    latestDate.setDate(latestDate.getDate() + this.urgentWithinDays);
-                    text.inputEl.min = toInputDate(today);
-                    text.inputEl.max = toInputDate(latestDate);
-                }
+                const today = new Date();
+                const boundaryDate = new Date(today);
+                boundaryDate.setDate(boundaryDate.getDate() + this.urgentWithinDays);
+                const earliestNotUrgentDate = new Date(boundaryDate);
+                earliestNotUrgentDate.setDate(earliestNotUrgentDate.getDate() + 1);
+                text.inputEl.min = toInputDate(this.mustBeUrgent ? today : earliestNotUrgentDate);
+                if (this.mustBeUrgent) text.inputEl.max = toInputDate(boundaryDate);
                 text.onChange(value => {
                     this.value = value;
                 });

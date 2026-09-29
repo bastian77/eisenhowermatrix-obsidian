@@ -116,7 +116,7 @@ class PriorityMatrixSettingTab extends PluginSettingTab {
 
         new Setting(containerEl)
             .setName('Importance threshold')
-            .setDesc('Priorities at this level and above are placed in the Important row')
+            .setDesc('Priorities at this level and above are placed in the important row')
             .addDropdown(dropdown => dropdown
                 .addOptions({
                     highest: 'Highest',

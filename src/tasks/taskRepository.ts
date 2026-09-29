@@ -58,7 +58,7 @@ export async function updateTaskPriority(
     app: App,
     task: SourceTask,
     priority: TaskPriority,
-    dueDate?: string,
+    dueDate?: string | null,
     dateFormat: TaskDateFormat = 'yyyy-MM-dd'
 ): Promise<void> {
     const file = getTaskFile(app, task);
@@ -70,9 +70,14 @@ export async function updateTaskPriority(
     const withoutDueDate = withoutPriority
         .replace(/\s*\[due:{1,2}\s*[^\]]+\]/i, '')
         .replace(/\s+$/, '');
+    const dueField = dueDate === undefined
+        ? existingDueField
+        : dueDate
+            ? `[due:: ${formatDueDate(dueDate, dateFormat)}]`
+            : '';
     const fields = [
         priority ? `[priority:: ${priority}]` : '',
-        dueDate ? `[due:: ${formatDueDate(dueDate, dateFormat)}]` : existingDueField,
+        dueField,
     ].filter(Boolean).join(' ');
 
     lines[task.line] = fields ? `${withoutDueDate} ${fields}` : withoutDueDate;

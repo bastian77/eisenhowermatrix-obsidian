@@ -21,7 +21,7 @@ export class TaskMatrixView extends ItemView {
     }
 
     getDisplayText(): string {
-        return 'Tasks Eisenhower view';
+        return 'Task matrix';
     }
 
     getIcon(): string {
@@ -84,6 +84,6 @@ export class TaskMatrixView extends ItemView {
     private renderView(): void {
         this.contentEl.empty();
         const container = this.contentEl.createDiv({ cls: 'priority-matrix-view' });
-        render(<TaskMatrix tasks={this.tasks} app={this.app} dateFormat={this.plugin.settings.dateFormat} urgentWithinDays={this.plugin.settings.urgentWithinDays} onChanged={() => { void this.refreshTasks(); }} />, container);
+        render(<TaskMatrix tasks={this.tasks} app={this.app} dateFormat={this.plugin.settings.dateFormat} urgentWithinDays={this.plugin.settings.urgentWithinDays} importantFrom={this.plugin.settings.importantFrom} onChanged={() => { void this.refreshTasks(); }} />, container);
     }
 }
