@@ -62,33 +62,37 @@ export async function updateTaskPriority(
     dateFormat: TaskDateFormat = 'yyyy-MM-dd'
 ): Promise<void> {
     const file = getTaskFile(app, task);
-    const lines = await readTaskLines(app, file, task);
-    const existingDueField = lines[task.line].match(/\[due:{1,2}\s*[^\]]+\]/i)?.[0] ?? '';
-    const withoutPriority = lines[task.line]
-        .replace(/\s*\[priority:{1,2}\s*(?:highest|high|medium|low|lowest)\s*\]/i, '')
-        .replace(/\s+$/, '');
-    const withoutDueDate = withoutPriority
-        .replace(/\s*\[due:{1,2}\s*[^\]]+\]/i, '')
-        .replace(/\s+$/, '');
-    const dueField = dueDate === undefined
-        ? existingDueField
-        : dueDate
-            ? `[due:: ${formatDueDate(dueDate, dateFormat)}]`
-            : '';
-    const fields = [
-        priority ? `[priority:: ${priority}]` : '',
-        dueField,
-    ].filter(Boolean).join(' ');
+    await app.vault.process(file, content => {
+        const lines = validateTaskLines(content, task);
+        const existingDueField = lines[task.line].match(/\[due:{1,2}\s*[^\]]+\]/i)?.[0] ?? '';
+        const withoutPriority = lines[task.line]
+            .replace(/\s*\[priority:{1,2}\s*(?:highest|high|medium|low|lowest)\s*\]/i, '')
+            .replace(/\s+$/, '');
+        const withoutDueDate = withoutPriority
+            .replace(/\s*\[due:{1,2}\s*[^\]]+\]/i, '')
+            .replace(/\s+$/, '');
+        const dueField = dueDate === undefined
+            ? existingDueField
+            : dueDate
+                ? `[due:: ${formatDueDate(dueDate, dateFormat)}]`
+                : '';
+        const fields = [
+            priority ? `[priority:: ${priority}]` : '',
+            dueField,
+        ].filter(Boolean).join(' ');
 
-    lines[task.line] = fields ? `${withoutDueDate} ${fields}` : withoutDueDate;
-    await app.vault.modify(file, lines.join('\n'));
+        lines[task.line] = fields ? `${withoutDueDate} ${fields}` : withoutDueDate;
+        return lines.join('\n');
+    });
 }
 
 export async function completeTask(app: App, task: SourceTask): Promise<void> {
     const file = getTaskFile(app, task);
-    const lines = await readTaskLines(app, file, task);
-    lines[task.line] = lines[task.line].replace(/\[ \]/, '[x]');
-    await app.vault.modify(file, lines.join('\n'));
+    await app.vault.process(file, content => {
+        const lines = validateTaskLines(content, task);
+        lines[task.line] = lines[task.line].replace(/\[ \]/, '[x]');
+        return lines.join('\n');
+    });
 }
 
 function getTaskFile(app: App, task: SourceTask): TFile {
@@ -97,8 +101,8 @@ function getTaskFile(app: App, task: SourceTask): TFile {
     return file;
 }
 
-async function readTaskLines(app: App, file: TFile, task: SourceTask): Promise<string[]> {
-    const lines = (await app.vault.read(file)).split(/\r?\n/);
+function validateTaskLines(content: string, task: SourceTask): string[] {
+    const lines = content.split(/\r?\n/);
     if (lines[task.line] !== task.raw) {
         throw new Error('Task changed since the view was refreshed. Refresh and try again.');
     }
