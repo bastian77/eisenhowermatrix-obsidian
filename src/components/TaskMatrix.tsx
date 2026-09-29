@@ -6,6 +6,7 @@ interface TaskMatrixProps {
     tasks: SourceTask[];
     app: App;
     dateFormat: TaskDateFormat;
+    urgentWithinDays: number;
     onChanged: () => void;
 }
 
@@ -16,7 +17,7 @@ const sections: Array<{ id: TaskSection; title: string }> = [
     { id: 'q4', title: 'Eliminate' },
 ];
 
-export function TaskMatrix({ tasks, app, dateFormat, onChanged }: TaskMatrixProps) {
+export function TaskMatrix({ tasks, app, dateFormat, urgentWithinDays, onChanged }: TaskMatrixProps) {
     const openTask = (task: SourceTask) => {
         void app.workspace.openLinkText(task.path, '', true);
     };
@@ -27,8 +28,11 @@ export function TaskMatrix({ tasks, app, dateFormat, onChanged }: TaskMatrixProp
         const priority = section === 'q1' || section === 'q2' ? 'high' : 'low';
         try {
             let dueDate: string | undefined;
-            if ((section === 'q1' || section === 'q2') && !task.due) {
-                const selectedDueDate = await requestDueDate(app);
+            const urgentSection = section === 'q1' || section === 'q3';
+            const taskIsUrgent = task.section === 'q1' || task.section === 'q3';
+            const needsUrgentDate = urgentSection && !taskIsUrgent;
+            if (needsUrgentDate || ((section === 'q1' || section === 'q2') && !task.due)) {
+                const selectedDueDate = await requestDueDate(app, urgentSection ? urgentWithinDays : undefined);
                 if (!selectedDueDate) return;
                 dueDate = selectedDueDate;
             }
@@ -88,9 +92,9 @@ export function TaskMatrix({ tasks, app, dateFormat, onChanged }: TaskMatrixProp
     );
 }
 
-function requestDueDate(app: App): Promise<string | null> {
+function requestDueDate(app: App, urgentWithinDays?: number): Promise<string | null> {
     return new Promise(resolve => {
-        const modal = new DueDateModal(app, resolve);
+        const modal = new DueDateModal(app, resolve, urgentWithinDays);
         modal.open();
     });
 }
@@ -99,7 +103,7 @@ class DueDateModal extends Modal {
     private resolved = false;
     private value = '';
 
-    constructor(app: App, private readonly resolveValue: (value: string | null) => void) {
+    constructor(app: App, private readonly resolveValue: (value: string | null) => void, private readonly urgentWithinDays?: number) {
         super(app);
         this.setTitle('Due date required');
     }
@@ -107,9 +111,18 @@ class DueDateModal extends Modal {
     onOpen(): void {
         new Setting(this.contentEl)
             .setName('Due date')
-            .setDesc('A due date is required for Do Now and Plan tasks.')
+            .setDesc(this.urgentWithinDays === undefined
+                ? 'A due date is required for Do Now and Plan tasks.'
+                : `Choose a due date within the next ${this.urgentWithinDays} days.`)
             .addText(text => {
                 text.inputEl.type = 'date';
+                if (this.urgentWithinDays !== undefined) {
+                    const today = new Date();
+                    const latestDate = new Date(today);
+                    latestDate.setDate(latestDate.getDate() + this.urgentWithinDays);
+                    text.inputEl.min = toInputDate(today);
+                    text.inputEl.max = toInputDate(latestDate);
+                }
                 text.onChange(value => {
                     this.value = value;
                 });
@@ -178,4 +191,10 @@ function formatDate(date: Date, format: TaskDateFormat): string {
     if (format === 'dd/MM/yyyy') return `${day}/${month}/${year}`;
     if (format === 'dd-MM-yyyy') return `${day}-${month}-${year}`;
     return `${day}.${month}.${year}`;
+}
+
+function toInputDate(date: Date): string {
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${date.getFullYear()}-${month}-${day}`;
 }

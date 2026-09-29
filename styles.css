@@ -19,7 +19,7 @@
 
 .priority-matrix-view .priority-matrix-grid {
   display: grid;
-  grid-template-columns: 140px minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-columns: 52px minmax(0, 1fr) minmax(0, 1fr);
   grid-template-rows: auto minmax(180px, 1fr) minmax(180px, 1fr);
   height: clamp(460px, 68vh, 760px);
   gap: 8px;
@@ -58,16 +58,22 @@
 
 .priority-matrix-view .pmx-row-label {
   display: flex;
-  align-items: center;
+  align-items: stretch;
   min-width: 0;
   justify-content: center;
 }
 
 .priority-matrix-view .pmx-row-label .pmx-col-subheader {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
   writing-mode: vertical-rl;
   transform: rotate(180deg);
   white-space: nowrap;
   text-align: center;
+  text-orientation: mixed;
+  letter-spacing: 0.01em;
 }
 
 .priority-matrix-view .pmx-list-panel,
