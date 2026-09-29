@@ -1,6 +1,6 @@
 {
-	"id": "priority-matrix",
-	"name": "Priority Matrix",
+       "id": "eisenhower-matrix",
+       "name": "Eisenhower Matrix",
 	"version": "0.0.8",
 	"minAppVersion": "1.2.3",
 	"description": "Create and manage tasks from your vault and display them in an Eisenhower matrix.",

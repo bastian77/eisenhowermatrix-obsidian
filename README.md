@@ -1,4 +1,4 @@
-# Priority Matrix Obsidian Plugin
+# Eisenhower Matrix Obsidian Plugin
 
 Create a source-backed Eisenhower view from tasks in your vault.
 A plugin made for [Obsidian](https://obsidian.md/)
@@ -19,21 +19,21 @@ A plugin made for [Obsidian](https://obsidian.md/)
 
 1. Open **Settings** → **Community plugins**
 2. Make sure Safe mode is **off**
-3. Click **Browse** and search for "Priority Matrix"
+3. Click **Browse** and search for "Eisenhower Matrix"
 4. Click **Install**, then **Enable**
 
 ### Manual Installation
 
-1. Download the latest release from the [GitHub repository](https://github.com/murtazaraza/prioritymatrix-obsidian)
-2. Extract the zip file and copy the `main.js`, `manifest.json`, and `styles.css` files to your vault's `.obsidian/plugins/priority-matrix/` folder
+1. Download the latest release from the [GitHub repository](https://github.com/bastian77/eisenhowermatrix-obsidian)
+2. Extract the zip file and copy the `main.js`, `manifest.json`, and `styles.css` files to your vault's `.obsidian/plugins/eisenhower-matrix/` folder
 3. Reload Obsidian
 4. Enable the plugin in **Settings** → **Community plugins**
 
 ## Usage
 
-### Opening the Eisenhower view
+### Opening the matrix
 1. Open the command palette (`Ctrl+P` / `Cmd+P`)
-2. Run **Open tasks Eisenhower view**
+2. Run **Open task matrix**
 3. The view scans the configured folder and displays each open task once
 
 ### Working with the Matrix
@@ -57,7 +57,7 @@ The Eisenhower Matrix organizes tasks into four quadrants:
 
 ## Configuration
 
-Access plugin settings via **Settings** → **Priority Matrix**.
+Access plugin settings via **Settings** → **Eisenhower Matrix**.
 
 ### Scan Settings
 
@@ -87,14 +87,14 @@ Access plugin settings via **Settings** → **Priority Matrix**.
 - Verify that **Recursive scan** is enabled for tasks in subfolders
 - Check the **Max files to scan** setting isn't limiting the scan
 
-### Tasks view not opening
+### Task matrix view not opening
 
-- Open the command palette and run **Open tasks Eisenhower view**
+- Open the command palette and run **Open task matrix**
 
 ### Plugin Not Loading
 
 - Verify the plugin is enabled in **Settings** → **Community plugins**
-- Check that `main.js`, `manifest.json`, and `styles.css` are in the correct folder: `.obsidian/plugins/priority-matrix/`
+- Check that `main.js`, `manifest.json`, and `styles.css` are in the correct folder: `.obsidian/plugins/eisenhower-matrix/`
 - Try reloading Obsidian (`Ctrl+R` / `Cmd+R`)
 
 ## Contributing
@@ -108,5 +108,5 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## Support
 
 For issues, feature requests, or questions:
-- Open an issue on the [GitHub repository](https://github.com/murtazaRaza/prioritymatrix-obsidian)
+- Open an issue on the [GitHub repository](https://github.com/bastian77/eisenhowermatrix-obsidian)
 - Check existing issues and discussions for solutions
