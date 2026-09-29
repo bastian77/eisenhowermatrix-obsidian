@@ -1,6 +1,7 @@
 import { TFile } from 'obsidian';
 
 export type TaskPriority = 'highest' | 'high' | 'medium' | 'low' | 'lowest' | null;
+export type ImportantThreshold = Exclude<Exclude<TaskPriority, null>, 'lowest'>;
 export type TaskDateFormat = 'yyyy-MM-dd' | 'dd.MM.yyyy' | 'dd/MM/yyyy' | 'dd-MM-yyyy';
 export type TaskSection = 'todo' | 'q1' | 'q2' | 'q3' | 'q4' | 'done';
 

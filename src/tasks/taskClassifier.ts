@@ -1,4 +1,4 @@
-import { TaskDateFormat, TaskPriority, TaskSection } from './types';
+import { ImportantThreshold, TaskPriority, TaskSection } from './types';
 
 const priorityRank: Record<Exclude<TaskPriority, null>, number> = {
     highest: 5,
@@ -8,11 +8,17 @@ const priorityRank: Record<Exclude<TaskPriority, null>, number> = {
     lowest: 1,
 };
 
+export function compareTaskPriorityDescending(left: TaskPriority, right: TaskPriority): number {
+    const leftRank = left === null ? 0 : priorityRank[left];
+    const rightRank = right === null ? 0 : priorityRank[right];
+    return rightRank - leftRank;
+}
+
 export function classifyTask(
     priority: TaskPriority,
     due: Date | null,
     today = new Date(),
-    importantFrom: Exclude<TaskPriority, null> = 'medium',
+    importantFrom: ImportantThreshold = 'medium',
     urgentWithinDays = 7
 ): TaskSection {
     if (!priority) return 'todo';

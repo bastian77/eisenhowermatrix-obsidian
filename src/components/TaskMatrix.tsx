@@ -1,12 +1,13 @@
 import { h } from 'preact';
 import { App, Modal, Notice, Setting } from 'obsidian';
-import { completeTask, SourceTask, TaskDateFormat, TaskSection, updateTaskPriority } from '../tasks/TaskProvider';
+import { compareTaskPriorityDescending, completeTask, ImportantThreshold, SourceTask, TaskDateFormat, TaskSection, updateTaskPriority } from '../tasks/TaskProvider';
 
 interface TaskMatrixProps {
     tasks: SourceTask[];
     app: App;
     dateFormat: TaskDateFormat;
     urgentWithinDays: number;
+    importantFrom: ImportantThreshold;
     onChanged: () => void;
 }
 
@@ -17,15 +18,14 @@ const sections: Array<{ id: TaskSection; title: string }> = [
     { id: 'q4', title: 'Eliminate' },
 ];
 
-const priorityRank: Record<NonNullable<SourceTask['priority']>, number> = {
-    highest: 5,
-    high: 4,
-    medium: 3,
-    low: 2,
-    lowest: 1,
+const priorityBelowThreshold: Record<ImportantThreshold, NonNullable<SourceTask['priority']>> = {
+    highest: 'high',
+    high: 'medium',
+    medium: 'low',
+    low: 'lowest',
 };
 
-export function TaskMatrix({ tasks, app, dateFormat, urgentWithinDays, onChanged }: TaskMatrixProps) {
+export function TaskMatrix({ tasks, app, dateFormat, urgentWithinDays, importantFrom, onChanged }: TaskMatrixProps) {
     const openTask = (task: SourceTask) => {
         void app.workspace.openLinkText(task.path, '', true);
     };
@@ -33,18 +33,20 @@ export function TaskMatrix({ tasks, app, dateFormat, urgentWithinDays, onChanged
     const tasksFor = (section: TaskSection) => {
         const sectionTasks = tasks.filter(task => task.section === section);
         if (section === 'todo' || section === 'done') return sectionTasks;
-        return sectionTasks.sort((left, right) => priorityRank[right.priority!] - priorityRank[left.priority!]);
+        return sectionTasks.sort((left, right) => compareTaskPriorityDescending(left.priority, right.priority));
     };
     const changePriority = async (task: SourceTask, section: TaskSection) => {
         if (section === 'todo') return;
-        const priority = section === 'q1' || section === 'q2' ? 'high' : 'low';
+        const importantSection = section === 'q1' || section === 'q2';
+        const priority = importantSection ? importantFrom : priorityBelowThreshold[importantFrom];
         try {
             let dueDate: string | undefined;
             const urgentSection = section === 'q1' || section === 'q3';
             const taskIsUrgent = task.section === 'q1' || task.section === 'q3';
-            const needsUrgentDate = urgentSection && !taskIsUrgent;
-            if (needsUrgentDate || ((section === 'q1' || section === 'q2') && !task.due)) {
-                const selectedDueDate = await requestDueDate(app, urgentSection ? urgentWithinDays : undefined);
+            const needsUrgencyChangeDate = urgentSection !== taskIsUrgent;
+            const needsPlanDate = section === 'q2' && !task.due;
+            if (needsUrgencyChangeDate || needsPlanDate) {
+                const selectedDueDate = await requestDueDate(app, urgentWithinDays, urgentSection);
                 if (!selectedDueDate) return;
                 dueDate = selectedDueDate;
             }
@@ -55,13 +57,10 @@ export function TaskMatrix({ tasks, app, dateFormat, urgentWithinDays, onChanged
         }
     };
 
-    const complete = async (task: SourceTask) => {
-        try {
-            await completeTask(app, task);
-            onChanged();
-        } catch (error) {
-            new Notice(error instanceof Error ? error.message : String(error));
-        }
+    const complete = (task: SourceTask): void => {
+        void completeTask(app, task)
+            .then(() => onChanged())
+            .catch(error => new Notice(error instanceof Error ? error.message : String(error)));
     };
 
     return (

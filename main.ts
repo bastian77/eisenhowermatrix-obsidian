@@ -1,12 +1,12 @@
-import { Plugin, PluginSettingTab, Setting, WorkspaceLeaf } from 'obsidian';
+import { Notice, Plugin, PluginSettingTab, Setting, WorkspaceLeaf } from 'obsidian';
 import { TaskMatrixView, VIEW_TYPE_TASK_MATRIX } from './src/views/TaskMatrixView';
-import type { TaskDateFormat, TaskPriority } from './src/tasks/TaskProvider';
+import type { ImportantThreshold, TaskDateFormat } from './src/tasks/TaskProvider';
 
 export interface PriorityMatrixSettings {
     includePath: string;
     recursive: boolean;
     maxFiles: number;
-    importantFrom: Exclude<TaskPriority, null>;
+    importantFrom: ImportantThreshold;
     urgentWithinDays: number;
     dateFormat: TaskDateFormat;
 }
@@ -26,7 +26,7 @@ export default class PriorityMatrixPlugin extends Plugin {
     async onload(): Promise<void> {
         const loaded = await this.loadData() as Partial<PriorityMatrixSettings> | null;
         this.settings = Object.assign({}, DEFAULT_SETTINGS, loaded);
-        if (!['highest', 'high', 'medium', 'low', 'lowest'].includes(this.settings.importantFrom)) {
+        if (!['highest', 'high', 'medium', 'low'].includes(this.settings.importantFrom)) {
             this.settings.importantFrom = DEFAULT_SETTINGS.importantFrom;
         }
         if (!Number.isInteger(this.settings.urgentWithinDays) || this.settings.urgentWithinDays < 0) {
@@ -41,12 +41,12 @@ export default class PriorityMatrixPlugin extends Plugin {
             (leaf: WorkspaceLeaf) => new TaskMatrixView(leaf, this)
         );
         this.addSettingTab(new PriorityMatrixSettingTab(this.app, this));
-        this.addRibbonIcon('layout-grid', 'Open tasks Eisenhower view', () => {
+        this.addRibbonIcon('layout-grid', 'Open task matrix', () => {
             void this.openTasksEisenhowerView();
         });
         this.addCommand({
             id: 'open-tasks-eisenhower-view',
-            name: 'Open tasks Eisenhower view',
+            name: 'Open task matrix',
             callback: async () => {
                 await this.openTasksEisenhowerView();
             },
@@ -56,14 +56,18 @@ export default class PriorityMatrixPlugin extends Plugin {
     private async openTasksEisenhowerView(): Promise<void> {
         const leaf = this.app.workspace.getMostRecentLeaf() ?? this.app.workspace.getLeaf(true);
         await leaf.setViewState({ type: VIEW_TYPE_TASK_MATRIX });
-        this.app.workspace.revealLeaf(leaf);
+        await this.app.workspace.revealLeaf(leaf);
     }
 
     async saveSettings(): Promise<void> {
         await this.saveData(this.settings);
         this.app.workspace.getLeavesOfType(VIEW_TYPE_TASK_MATRIX).forEach(leaf => {
             const view = leaf.view;
-            if (view instanceof TaskMatrixView) view.refreshTasks();
+            if (view instanceof TaskMatrixView) {
+                void view.refreshTasks().catch(error => {
+                    new Notice(error instanceof Error ? error.message : String(error));
+                });
+            }
         });
     }
 }
@@ -111,7 +115,7 @@ class PriorityMatrixSettingTab extends PluginSettingTab {
                 }));
 
         new Setting(containerEl)
-            .setName('Important from priority')
+            .setName('Importance threshold')
             .setDesc('Priorities at this level and above are placed in the Important row')
             .addDropdown(dropdown => dropdown
                 .addOptions({
@@ -119,11 +123,10 @@ class PriorityMatrixSettingTab extends PluginSettingTab {
                     high: 'High',
                     medium: 'Medium',
                     low: 'Low',
-                    lowest: 'Lowest',
                 })
                 .setValue(this.plugin.settings.importantFrom)
                 .onChange(async value => {
-                    this.plugin.settings.importantFrom = value as Exclude<TaskPriority, null>;
+                    this.plugin.settings.importantFrom = value as ImportantThreshold;
                     await this.plugin.saveSettings();
                 }));
 

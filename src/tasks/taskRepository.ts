@@ -2,7 +2,7 @@ import { App, TFile, TFolder } from 'obsidian';
 import { classifyTask } from './taskClassifier';
 import { formatDueDate } from './taskParser';
 import { parseTaskLine } from './taskParser';
-import { SourceTask, TaskDateFormat, TaskPriority } from './types';
+import { ImportantThreshold, SourceTask, TaskDateFormat, TaskPriority } from './types';
 
 export async function scanSourceTasks(
     app: App,
@@ -10,7 +10,7 @@ export async function scanSourceTasks(
     recursive: boolean,
     excludedPaths: Set<string> = new Set(),
     maxFiles = 0,
-    importantFrom: Exclude<TaskPriority, null> = 'medium',
+    importantFrom: ImportantThreshold = 'medium',
     urgentWithinDays = 7,
     dateFormat: TaskDateFormat = 'yyyy-MM-dd'
 ): Promise<SourceTask[]> {
