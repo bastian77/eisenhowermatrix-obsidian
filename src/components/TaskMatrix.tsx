@@ -17,12 +17,24 @@ const sections: Array<{ id: TaskSection; title: string }> = [
     { id: 'q4', title: 'Eliminate' },
 ];
 
+const priorityRank: Record<NonNullable<SourceTask['priority']>, number> = {
+    highest: 5,
+    high: 4,
+    medium: 3,
+    low: 2,
+    lowest: 1,
+};
+
 export function TaskMatrix({ tasks, app, dateFormat, urgentWithinDays, onChanged }: TaskMatrixProps) {
     const openTask = (task: SourceTask) => {
         void app.workspace.openLinkText(task.path, '', true);
     };
 
-    const tasksFor = (section: TaskSection) => tasks.filter(task => task.section === section);
+    const tasksFor = (section: TaskSection) => {
+        const sectionTasks = tasks.filter(task => task.section === section);
+        if (section === 'todo' || section === 'done') return sectionTasks;
+        return sectionTasks.sort((left, right) => priorityRank[right.priority!] - priorityRank[left.priority!]);
+    };
     const changePriority = async (task: SourceTask, section: TaskSection) => {
         if (section === 'todo') return;
         const priority = section === 'q1' || section === 'q2' ? 'high' : 'low';
